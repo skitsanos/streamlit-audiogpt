@@ -45,8 +45,11 @@ if audio_value:
         )
 
     # Display the text response from the API
-    st.write("Text Response:")
-    st.write(completion.choices[0].message.content)
+    st.write("Response:")
+    st.write(completion.choices[0].message.audio.transcript)
+
+    if completion.choices[0].message.content:
+        st.write(completion.choices[0].message.content)
 
     # Decode the audio response from the API
     if hasattr(completion.choices[0].message, 'audio') and completion.choices[0].message.audio:
