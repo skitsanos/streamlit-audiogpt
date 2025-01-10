@@ -8,12 +8,15 @@ client = OpenAI()
 # Streamlit app title
 st.title("OpenAI Audio Processing App")
 
+# Instructions for the user
+st.write("Record your question or message, and the app will respond with text and audio.")
+
 # Record audio from the user's microphone
 audio_value = st.audio_input("Speak into your microphone")
 
 if audio_value:
     # Display the recorded audio
-    #st.audio(audio_value, format="audio/wav")
+    st.audio(audio_value, format="audio/wav")
 
     # Get the audio data as bytes using getvalue()
     audio_bytes = audio_value.getvalue()
@@ -23,43 +26,49 @@ if audio_value:
 
     # Show a spinner while processing the API request
     with st.spinner("Processing your audio..."):
-        # Send the audio to OpenAI API for processing
-        completion = client.chat.completions.create(
-            model="gpt-4o-audio-preview",
-            modalities=["text", "audio"],
-            audio={"voice": "alloy", "format": "wav"},
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_audio",
-                            "input_audio": {
-                                "data": encoded_string,
-                                "format": "wav"
+        try:
+            # Send the audio to OpenAI API for processing
+            completion = client.chat.completions.create(
+                model="gpt-4o-audio-preview",
+                modalities=["text", "audio"],
+                audio={"voice": "alloy", "format": "wav"},
+                temperature=1.0,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant. You have a funny personality and British accent. "
+                                   "Use some laughter and jokes to make the conversation more engaging."
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_audio",
+                                "input_audio": {
+                                    "data": encoded_string,
+                                    "format": "wav"
+                                }
                             }
-                        }
-                    ]
-                },
-            ]
-        )
+                        ]
+                    },
+                ]
+            )
 
-    # Display the text response from the API
-    st.write("Response:")
-    st.write(completion.choices[0].message.audio.transcript)
+            # Display the text response from the API
+            st.write("Response:")
+            st.write(completion.choices[0].message.audio.transcript)
 
-    if completion.choices[0].message.content:
-        st.write(completion.choices[0].message.content)
+            if completion.choices[0].message.content:
+                st.write(completion.choices[0].message.content)
 
-    # Decode the audio response from the API
-    if hasattr(completion.choices[0].message, 'audio') and completion.choices[0].message.audio:
-        wav_bytes = base64.b64decode(completion.choices[0].message.audio.data)
+            # Decode the audio response from the API
+            if hasattr(completion.choices[0].message, 'audio') and completion.choices[0].message.audio:
+                wav_bytes = base64.b64decode(completion.choices[0].message.audio.data)
 
-        # Save the audio response to a file (optional)
-        with open("response.wav", "wb") as f:
-            f.write(wav_bytes)
+                # Play the audio response in the app
+                st.audio(wav_bytes, format='audio/wav')
+            else:
+                st.write("No audio response received.")
 
-        # Play the audio response in the app
-        st.audio("response.wav", format='audio/wav')
-    else:
-        st.write("No audio response received.")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
