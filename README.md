@@ -113,10 +113,6 @@ Before running the app, ensure you have the following:
 
 If you'd like to contribute to this project, feel free to open an issue or submit a pull request. Contributions are welcome!
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](https://chat.deepseek.com/a/chat/s/LICENSE) file for details.
-
 ------
 
 ## Acknowledgments
